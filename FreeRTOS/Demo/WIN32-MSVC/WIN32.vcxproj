@@ -15,7 +15,7 @@
     <ConfigurationType>Application</ConfigurationType>
     <UseOfMfc>false</UseOfMfc>
     <CharacterSet>MultiByte</CharacterSet>
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
@@ -81,32 +81,6 @@
     <ClCompile Include="..\..\Source\portable\MemMang\heap_5.c" />
     <ClCompile Include="..\..\Source\stream_buffer.c" />
     <ClCompile Include="..\..\Source\timers.c" />
-    <ClCompile Include="..\Common\Minimal\AbortDelay.c" />
-    <ClCompile Include="..\Common\Minimal\BlockQ.c" />
-    <ClCompile Include="..\Common\Minimal\blocktim.c" />
-    <ClCompile Include="..\Common\Minimal\countsem.c" />
-    <ClCompile Include="..\Common\Minimal\death.c" />
-    <ClCompile Include="..\Common\Minimal\dynamic.c" />
-    <ClCompile Include="..\Common\Minimal\EventGroupsDemo.c" />
-    <ClCompile Include="..\Common\Minimal\flop.c" />
-    <ClCompile Include="..\Common\Minimal\GenQTest.c" />
-    <ClCompile Include="..\Common\Minimal\integer.c" />
-    <ClCompile Include="..\Common\Minimal\IntSemTest.c" />
-    <ClCompile Include="..\Common\Minimal\MessageBufferAMP.c" />
-    <ClCompile Include="..\Common\Minimal\PollQ.c" />
-    <ClCompile Include="..\Common\Minimal\QPeek.c" />
-    <ClCompile Include="..\Common\Minimal\QueueOverwrite.c" />
-    <ClCompile Include="..\Common\Minimal\QueueSet.c" />
-    <ClCompile Include="..\Common\Minimal\QueueSetPolling.c" />
-    <ClCompile Include="..\Common\Minimal\recmutex.c" />
-    <ClCompile Include="..\Common\Minimal\semtest.c" />
-    <ClCompile Include="..\Common\Minimal\StaticAllocation.c" />
-    <ClCompile Include="..\Common\Minimal\MessageBufferDemo.c" />
-    <ClCompile Include="..\Common\Minimal\StreamBufferDemo.c" />
-    <ClCompile Include="..\Common\Minimal\StreamBufferInterrupt.c" />
-    <ClCompile Include="..\Common\Minimal\TaskNotify.c" />
-    <ClCompile Include="..\Common\Minimal\TaskNotifyArray.c" />
-    <ClCompile Include="..\Common\Minimal\timerdemo.c" />
     <ClCompile Include="main.c">
       <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -127,8 +101,6 @@
       <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
-    <ClCompile Include="main_blinky.c" />
-    <ClCompile Include="main_full.c" />
     <ClCompile Include="Run-time-stats-utils.c" />
   </ItemGroup>
   <ItemGroup>
