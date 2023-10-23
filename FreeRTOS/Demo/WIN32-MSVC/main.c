@@ -24,29 +24,6 @@
  *
  */
 
-/******************************************************************************
- * This project provides two demo applications.  A simple blinky style project,
- * and a more comprehensive test and demo application.  The
- * mainCREATE_SIMPLE_BLINKY_DEMO_ONLY setting is used to select between the two.
- * The simply blinky demo is implemented and described in main_blinky.c.  The
- * more comprehensive test and demo application is implemented and described in
- * main_full.c.
- *
- * This file implements the code that is not demo specific, including the
- * hardware setup and FreeRTOS hook functions.
- *
- *******************************************************************************
- * NOTE: Windows will not be running the FreeRTOS demo threads continuously, so
- * do not expect to get real time behaviour from the FreeRTOS Windows port, or
- * this demo application.  Also, the timing information in the FreeRTOS+Trace
- * logs have no meaningful units.  See the documentation page for the Windows
- * port for further information:
- * https://www.FreeRTOS.org/FreeRTOS-Windows-Simulator-Emulator-for-Visual-Studio-and-Eclipse-MingW.html
- *
- *
- *******************************************************************************
- */
-
 /* Standard includes. */
 #include <stdio.h>
 #include <stdlib.h>
@@ -78,7 +55,6 @@
 #define BUFFER_SIZE                           200
 #define MIN_RAND_NUM                          0
 #define MAX_RAND_ADDR                         199
-#define MAX_RAND_VAL                          4294967295
 /*-----------------------------------------------------------*/
 
 /*
@@ -105,10 +81,6 @@ void vApplicationGetTimerTaskMemory( StaticTask_t ** ppxTimerTaskTCBBuffer,
                                      StackType_t ** ppxTimerTaskStackBuffer,
                                      uint32_t * pulTimerTaskStackSize );
 
-static uint32_t prvWriteRandomNumberIntoBuffer();
-static void prvConsumerTask(void* pvParameters);
-static void prvProducerTask(void* pvParameters);
-
 /*
  * Writes trace data to a disk file when the trace recording is stopped.
  * This function will simply overwrite any trace files that already exist.
@@ -126,9 +98,14 @@ StackType_t uxTimerTaskStack[ configTIMER_TASK_STACK_DEPTH ];
 
 /*-----------------------------------------------------------*/
 
+static uint32_t prvWriteRandomNumberIntoBuffer();
+static void prvConsumerTask(void* pvParameters);
+static void prvProducerTask(void* pvParameters);
+
+/* 2.1 - Allocate memory for 200 elements, type: uint32_t */
 static uint32_t uiDataBuffer[BUFFER_SIZE];
-static TaskHandle_t TaskHandleProducer = NULL;
 static TaskHandle_t TaskHandleConsumer = NULL;
+static TaskHandle_t TaskHandleProducer = NULL;
 
 /*-----------------------------------------------------------*/
 
@@ -146,6 +123,7 @@ int main( void )
 
     configASSERT( xTraceEnable( TRC_START ) == TRC_SUCCESS );
 
+    /* 2.2 - Create two threads (producer and consumer) */
     xTaskCreate(prvConsumerTask,
         "ConsumerTask", 
         configMINIMAL_STACK_SIZE, 
@@ -393,13 +371,25 @@ void vApplicationGetTimerTaskMemory( StaticTask_t ** ppxTimerTaskTCBBuffer,
 static void prvConsumerTask(void* pvParameters)
 {
     (void)pvParameters;
-    uint32_t notifiedValue;
+    uint32_t notifiedAddress;
+
+    /* 2.10 - this shall run in endless loop */
     for (;;)
-    {
-        if(xTaskNotifyWait(0, 0, &notifiedValue, portMAX_DELAY) == pdTRUE)
+    {   
+        /* Wait until a new value is inserted*/
+        /* 2.6 - The consumer should start to read the position which was changed by the producer */
+        if(xTaskNotifyWait(0, 0, &notifiedAddress, portMAX_DELAY) == pdTRUE)
         {
-            printf("Consumed value = %d\n", uiDataBuffer[notifiedValue]);
-            uiDataBuffer[notifiedValue] = 0;
+            /* 2.7 - The consumer should print out the position and number */
+            printf("Consumed value = %d, adrress = %d\n", uiDataBuffer[notifiedAddress], notifiedAddress);
+
+            /* Clear buffer */
+            /* 2.8 - The consumer should clean (set 0) to the position, which was read */
+            uiDataBuffer[notifiedAddress] = 0;
+
+            /* Notify Producer task that values is consumed */
+            /* 2.9 - The consumer should notice the producer, that operation is finished,
+            * and the producer should continue to write (at 2.2) */
             xTaskNotify(TaskHandleProducer, 0, eSetValueWithOverwrite);
         }
     }
@@ -411,14 +401,24 @@ static void prvProducerTask(void* pvParameters)
     uint32_t notifiedValue;
     uint32_t addressToNotify;
 
+    /* Insert first value */
     addressToNotify = prvWriteRandomNumberIntoBuffer();
 
+    /* Notify Consumer task that first value has been introduced */
+    /* 2.5 - The producder signals the position he wrote to consumer by
+     * some kind of inter-thread communication */
     xTaskNotify(TaskHandleConsumer, addressToNotify, eSetValueWithOverwrite);
+
+    /* 2.10 - this shall run in endless loop */
     for (;;)
     {
+        /* Wait until value inserted is consumed */
         if (xTaskNotifyWait(0, 0, &notifiedValue, portMAX_DELAY) == pdTRUE)
         {
+            /* Insert a new value and notify Consumer task */
             addressToNotify = prvWriteRandomNumberIntoBuffer();
+            /* 2.5 - The producder signals the position he wrote to consumer by
+             * some kind of inter-thread communication */
             xTaskNotify(TaskHandleConsumer, addressToNotify, eSetValueWithOverwrite);
         }
     }
@@ -426,12 +426,15 @@ static void prvProducerTask(void* pvParameters)
 
 static uint32_t prvWriteRandomNumberIntoBuffer()
 {
+    /* 2.3 - The producer should randomly generate a number and write to
+     * the allocated memory (position of memory also randomly) */
     const uint32_t randomNumber = (uint32_t)rand();
     const uint8_t adrress = randomNumber % (MAX_RAND_ADDR - MIN_RAND_NUM);
 
     uiDataBuffer[adrress] = randomNumber;
 
-    printf("Produced value = %d at address %d\n", uiDataBuffer[adrress], adrress);
+    /* 2.4 - The producer should print out the position and number */
+    printf("Produced value = %d, address = %d\n", uiDataBuffer[adrress], adrress);
         
     return adrress;
 }
